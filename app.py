@@ -23,18 +23,8 @@ PROGRAMS = {
 
 @app.route("/", methods=["GET"])
 def index():
-    """Root route — shows available endpoints."""
-    return jsonify(
-        {
-            "app": "ACEest Fitness API",
-            "endpoints": {
-                "GET  /health": "Health check",
-                "GET  /programs": "List all programs",
-                "GET  /program/<name>": "e.g. /program/Fat%20Loss%20(FL)",
-                "POST /calories": '{"weight": 70, "program": "Fat Loss (FL)"}',
-            },
-        }
-    )
+    """Render main dashboard UI."""
+    return render_template("index.html")
 
 
 @app.route("/health", methods=["GET"])
