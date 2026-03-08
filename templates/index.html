@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACEest Fitness</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #D4AF37; --gold-glow: rgba(212,175,55,0.12);
+  --bg: #0a0a0b; --surface: #111114; --surface2: #18181d; --surface3: #222228;
+  --border: rgba(255,255,255,0.07); --text: #f0f0f4; --text-dim: #6b6b80;
+  --red: #ff5555; --green: #39d98a; --blue: #4d9fff;
+}
+body { background:var(--bg); color:var(--text); font-family:-apple-system,'Segoe UI',sans-serif; min-height:100vh; }
+header { background:var(--surface); border-bottom:1px solid var(--border); padding:24px 40px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+.logo { font-size:30px; font-weight:900; letter-spacing:5px; color:var(--gold); text-transform:uppercase; }
+.logo span { font-size:12px; font-weight:400; letter-spacing:2px; color:var(--text-dim); display:block; margin-top:3px; }
+.status-pill { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:8px 18px; font-size:12px; color:var(--text-dim); font-family:monospace; }
+.dot { width:8px; height:8px; border-radius:50%; background:#444; transition:all 0.4s; }
+.dot.on { background:var(--green); box-shadow:0 0 8px var(--green); animation:blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+main { max-width:1200px; margin:0 auto; padding:32px 40px; display:grid; grid-template-columns:320px 1fr; gap:24px; }
+@media(max-width:860px){ main{grid-template-columns:1fr;padding:20px;} header{padding:20px;} }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+.card-head { padding:16px 20px; border-bottom:1px solid var(--border); font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); font-weight:600; display:flex; align-items:center; gap:8px; }
+.card-head::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--gold); box-shadow:0 0 6px var(--gold); flex-shrink:0; }
+.card-body { padding:20px; }
+.prog-list { display:flex; flex-direction:column; gap:8px; }
+.prog-item { display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
+.prog-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--gold); transform:scaleY(0); transition:transform 0.2s; }
+.prog-item:hover { border-color:rgba(212,175,55,0.3); transform:translateX(3px); }
+.prog-item:hover::before { transform:scaleY(1); }
+.prog-item.active { border-color:rgba(212,175,55,0.4); background:var(--gold-glow); }
+.prog-item.active::before { transform:scaleY(1); }
+.badge { width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; letter-spacing:1px; flex-shrink:0; }
+.badge.fl { background:rgba(255,85,85,0.15); color:var(--red); border:1px solid rgba(255,85,85,0.2); }
+.badge.mg { background:rgba(57,217,138,0.15); color:var(--green); border:1px solid rgba(57,217,138,0.2); }
+.badge.bg { background:rgba(77,159,255,0.15); color:var(--blue); border:1px solid rgba(77,159,255,0.2); }
+.prog-name { font-size:14px; font-weight:600; color:var(--text); }
+.prog-sub { font-size:12px; color:var(--text-dim); margin-top:2px; }
+.prog-arrow { margin-left:auto; color:var(--text-dim); transition:all 0.2s; opacity:0; font-size:18px; }
+.prog-item:hover .prog-arrow, .prog-item.active .prog-arrow { opacity:1; color:var(--gold); }
+label.lbl { display:block; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); font-weight:600; margin-bottom:8px; }
+.input-row { display:flex; gap:8px; }
+input[type=number] { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 14px; color:var(--text); font-size:15px; font-family:monospace; outline:none; transition:border-color 0.2s; }
+input[type=number]:focus { border-color:rgba(212,175,55,0.5); }
+input[type=number]::placeholder { color:var(--text-dim); }
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+.btn { background:var(--gold); color:#000; border:none; border-radius:8px; padding:11px 18px; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+.btn:hover { background:#e8c43d; transform:translateY(-1px); box-shadow:0 4px 16px rgba(212,175,55,0.3); }
+.btn:active { transform:translateY(0); }
+.result-box { display:none; margin-top:12px; background:var(--gold-glow); border:1px solid rgba(212,175,55,0.25); border-radius:10px; padding:16px 20px; align-items:center; justify-content:space-between; }
+.result-box.show { display:flex; animation:up 0.3s ease; }
+.cal-num { font-size:32px; font-weight:900; color:var(--gold); letter-spacing:2px; }
+.cal-lbl { font-size:12px; color:var(--text-dim); margin-top:2px; }
+.cal-right { font-size:12px; color:var(--text-dim); font-family:monospace; text-align:right; white-space:pre; }
+.empty-hero { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px; text-align:center; padding:40px; }
+.empty-big { font-size:72px; font-weight:900; letter-spacing:6px; color:var(--surface3); line-height:1; }
+.empty-sub { color:var(--text-dim); font-size:14px; margin-top:12px; }
+.detail-hero { padding:30px; position:relative; overflow:hidden; }
+.detail-hero::after { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; border-radius:50%; background:var(--gold-glow); pointer-events:none; }
+.prog-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:8px; }
+.detail-title { font-size:clamp(26px,4vw,44px); font-weight:900; letter-spacing:2px; color:var(--text); line-height:1.1; }
+.detail-desc { margin-top:10px; font-size:13px; color:var(--text-dim); line-height:1.6; max-width:400px; }
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:600px){ .info-grid{grid-template-columns:1fr;} }
+.info-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; animation:up 0.35s ease both; }
+.info-card:nth-child(2) { animation-delay:0.07s; }
+.info-card-title { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); font-weight:600; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; letter-spacing:1px; }
+.tag.w { background:rgba(255,85,85,0.15); color:var(--red); }
+.tag.d { background:rgba(57,217,138,0.15); color:var(--green); }
+.info-items { display:flex; flex-direction:column; gap:6px; }
+.info-row { display:flex; align-items:flex-start; gap:10px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13px; color:var(--text); line-height:1.5; }
+.rdot { width:5px; height:5px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+.w .rdot { background:var(--red); }
+.d .rdot { background:var(--green); }
+.ep-list { display:flex; flex-direction:column; }
+.ep-row { display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--border); transition:background 0.15s; }
+.ep-row:last-child { border-bottom:none; }
+.ep-row:hover { background:var(--surface2); }
+.method { font-family:monospace; font-size:10px; font-weight:700; letter-spacing:1px; padding:3px 8px; border-radius:4px; flex-shrink:0; min-width:42px; text-align:center; }
+.method.get { background:rgba(77,159,255,0.15); color:var(--blue); border:1px solid rgba(77,159,255,0.2); }
+.method.post { background:rgba(57,217,138,0.15); color:var(--green); border:1px solid rgba(57,217,138,0.2); }
+.ep-path { font-family:monospace; font-size:12px; color:var(--text); flex:1; }
+.ep-desc { font-size:11px; color:var(--text-dim); }
+.ep-dot { width:6px; height:6px; border-radius:50%; background:var(--surface3); flex-shrink:0; transition:all 0.3s; }
+.ep-dot.ok { background:var(--green); box-shadow:0 0 6px var(--green); }
+.spinner { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.6s linear infinite; display:inline-block; }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.err { color:var(--red); font-size:13px; text-align:center; padding:16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ACEest<span>Functional Fitness &nbsp;·&nbsp; REST API Dashboard</span></div>
+  <div class="status-pill">
+    <div class="dot" id="dot"></div>
+    <span id="stxt">Connecting...</span>
+  </div>
+</header>
+
+<main>
+  <div>
+    <div class="card">
+      <div class="card-head">Training Programs</div>
+      <div class="card-body">
+        <div class="prog-list" id="progList">
+          <div style="text-align:center;padding:20px">
+            <div class="spinner"></div>
+            <p style="margin-top:10px;font-size:13px;color:var(--text-dim)">Loading...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Calorie Calculator</div>
+      <div class="card-body">
+        <label class="lbl">Your Body Weight (kg)</label>
+        <div class="input-row">
+          <input type="number" id="wt" placeholder="e.g. 75" min="1" max="300">
+          <button class="btn" onclick="calcCal()">Calculate</button>
+        </div>
+        <div class="result-box" id="rb">
+          <div><div class="cal-num" id="cn">—</div><div class="cal-lbl">kcal per day</div></div>
+          <div class="cal-right" id="cr"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">API Endpoints</div>
+      <div class="ep-list">
+        <div class="ep-row"><span class="method get">GET</span><span class="ep-path">/health</span><span class="ep-desc">Health check</span><div class="ep-dot" id="e1"></div></div>
+        <div class="ep-row"><span class="method get">GET</span><span class="ep-path">/programs</span><span class="ep-desc">List all</span><div class="ep-dot" id="e2"></div></div>
+        <div class="ep-row"><span class="method get">GET</span><span class="ep-path">/program/:name</span><span class="ep-desc">Program detail</span><div class="ep-dot" id="e3"></div></div>
+        <div class="ep-row"><span class="method post">POST</span><span class="ep-path">/calories</span><span class="ep-desc">Calculate kcal</span><div class="ep-dot" id="e4"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="rc">
+    <div class="card">
+      <div class="detail-hero empty-hero">
+        <div class="empty-big">ACEest</div>
+        <div class="empty-sub">&#8592; Select a program to view details</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const META = {
+  'Fat Loss (FL)':   { code:'FL', cls:'fl', desc:'High-intensity cardio + strength. Caloric deficit protocol targeting fat loss.', w:['Back Squat 5x5 + Core work','EMOM 20min Assault Bike','Bench Press + 21-15-9 WOD','Deadlift + Box Jumps 10RFT','Zone 2 Cardio 30min Recovery'], d:['Breakfast: Egg Whites + Oats Idli','Lunch: Grilled Chicken + Brown Rice','Dinner: Fish Curry + Millet Roti','Daily Target: ~2,000 kcal'] },
+  'Muscle Gain (MG)':{ code:'MG', cls:'mg', desc:'Progressive overload 5x5 strength. High-protein caloric surplus protocol.', w:['Squat 5x5','Bench Press 5x5','Deadlift 4x6','Front Squat 4x8','Incline Press 4x10','Barbell Rows 4x10'], d:['Breakfast: 4 Eggs + Peanut Butter Oats','Lunch: Chicken Biryani (250g chicken)','Dinner: Mutton Curry + Jeera Rice','Daily Target: ~3,200 kcal'] },
+  'Beginner (BG)':   { code:'BG', cls:'bg', desc:'Full body circuit training. Master technique before adding load.', w:['Air Squats – 3 sets x 15 reps','Ring Rows – 3 sets x 10 reps','Push-ups – 3 sets x 12 reps','Focus: Technique Mastery','90% Effort Threshold Rule'], d:['Breakfast: Idli + Sambar','Lunch: Rice + Dal + Vegetables','Dinner: Chapati + Curry','Protein Target: 120g/day'] }
+};
+let sel = null;
+
+async function init() {
+  try {
+    const r = await fetch('/health');
+    const d = await r.json();
+    if (d.status==='healthy') {
+      document.getElementById('dot').classList.add('on');
+      document.getElementById('stxt').textContent = 'API Online';
+      document.getElementById('e1').classList.add('ok');
+    }
+  } catch(e) {
+    document.getElementById('stxt').textContent = 'API Offline';
+    document.getElementById('progList').innerHTML = '<p class="err">Cannot reach Flask server.<br>Make sure app.py is running on port 5000.</p>';
+    return;
+  }
+  try {
+    const r = await fetch('/programs');
+    const d = await r.json();
+    document.getElementById('e2').classList.add('ok');
+    const list = document.getElementById('progList');
+    list.innerHTML = '';
+    d.programs.forEach(name => {
+      const m = META[name] || {code:'?',cls:'bg',desc:''};
+      const el = document.createElement('div');
+      el.className = 'prog-item';
+      el.innerHTML = `<div class="badge ${m.cls}">${m.code}</div><div><div class="prog-name">${name}</div><div class="prog-sub">${m.desc.split('.')[0]}</div></div><span class="prog-arrow">&#8250;</span>`;
+      el.onclick = () => pickProg(name, el);
+      list.appendChild(el);
+    });
+  } catch(e) {
+    document.getElementById('progList').innerHTML = '<p class="err">Failed to load programs.</p>';
+  }
+}
+
+async function pickProg(name, el) {
+  document.querySelectorAll('.prog-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  sel = name;
+  const rc = document.getElementById('rc');
+  rc.innerHTML = '<div class="card"><div class="detail-hero empty-hero"><div class="spinner"></div></div></div>';
+  try {
+    await fetch('/program/'+encodeURIComponent(name));
+    document.getElementById('e3').classList.add('ok');
+    const m = META[name];
+    const wRows = m.w.map(x=>`<div class="info-row w"><div class="rdot"></div><span>${x}</span></div>`).join('');
+    const dRows = m.d.map(x=>`<div class="info-row d"><div class="rdot"></div><span>${x}</span></div>`).join('');
+    rc.innerHTML = `
+      <div class="card" style="margin-bottom:20px;animation:up 0.3s ease">
+        <div class="detail-hero">
+          <div class="prog-label">Active Program</div>
+          <div class="detail-title">${name}</div>
+          <div class="detail-desc">${m.desc}</div>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card-title"><span class="tag w">WORKOUT</span> Weekly Training</div>
+          <div class="info-items w">${wRows}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title"><span class="tag d">DIET</span> Nutrition Plan</div>
+          <div class="info-items d">${dRows}</div>
+        </div>
+      </div>`;
+  } catch(e) {
+    rc.innerHTML = '<div class="card"><p class="err">Failed to load program.</p></div>';
+  }
+}
+
+async function calcCal() {
+  const wt = parseFloat(document.getElementById('wt').value);
+  const inp = document.getElementById('wt');
+  if (!wt||wt<=0) { inp.style.borderColor='var(--red)'; setTimeout(()=>inp.style.borderColor='',1500); return; }
+  if (!sel) { alert('Please select a program first'); return; }
+  try {
+    const r = await fetch('/calories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({weight:wt,program:sel})});
+    const d = await r.json();
+    document.getElementById('e4').classList.add('ok');
+    document.getElementById('cn').textContent = d.calories.toLocaleString();
+    document.getElementById('cr').textContent = sel.replace(/\s*\(.*\)/,'')+'\n'+wt+' kg';
+    document.getElementById('rb').classList.add('show');
+  } catch(e) { console.error(e); }
+}
+
+document.getElementById('wt').addEventListener('keydown', e=>{ if(e.key==='Enter') calcCal(); });
+init();
+</script>
+</body>
+</html>
