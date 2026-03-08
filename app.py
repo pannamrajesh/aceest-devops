@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template  # noqa: F401
 
 app = Flask(__name__)
 
