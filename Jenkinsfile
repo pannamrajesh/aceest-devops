@@ -12,25 +12,25 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Lint') {
             steps {
-                sh 'flake8 app.py --max-line-length=100'
+                bat 'flake8 app.py --max-line-length=100'
             }
         }
 
         stage('Unit Tests') {
             steps {
-                sh 'pytest tests/ -v --tb=short'
+                bat 'pytest tests/ -v --tb=short'
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t aceest-fitness:latest .'
+                bat 'docker build -t aceest-fitness:latest .'
             }
         }
 
