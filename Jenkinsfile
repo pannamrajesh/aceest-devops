@@ -13,18 +13,19 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 bat 'pip install -r requirements.txt'
+                bat 'pip install flake8'
             }
         }
 
         stage('Lint') {
             steps {
-                bat 'flake8 app.py --max-line-length=100'
+                bat 'python -m flake8 app.py --max-line-length=100'
             }
         }
 
         stage('Unit Tests') {
             steps {
-                bat 'pytest tests/ -v --tb=short'
+                bat 'python -m pytest tests/ -v --tb=short'
             }
         }
 
