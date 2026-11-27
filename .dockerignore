@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.github/
+.venv/
+.pytest_cache/
+.coverage
+coverage.xml
+*.db
+*.sqlite
+.env
+Jenkinsfile
+k8s/
+tests/
+The code versions for DevOps Assignment/

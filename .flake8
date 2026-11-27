@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 120
+exclude = .git,__pycache__,.venv,The code versions for DevOps Assignment
+per-file-ignores = tests/*:E302,E305
