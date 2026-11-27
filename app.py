@@ -1,4 +1,6 @@
-from flask import Flask, jsonify, request, render_template  # noqa: F401
+import os
+
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 
@@ -50,9 +52,9 @@ def get_program(name):
 @app.route("/calories", methods=["POST"])
 def calculate_calories():
     """Calculate daily calorie target based on weight and program."""
-    data = request.get_json()
+    data = request.get_json(silent=True)
 
-    if not data:
+    if not isinstance(data, dict) or not data:
         return jsonify({"error": "No JSON body provided"}), 400
 
     weight = data.get("weight", 0)
@@ -61,8 +63,11 @@ def calculate_calories():
     if program not in PROGRAMS:
         return jsonify({"error": "Invalid program"}), 400
 
-    if weight <= 0:
-        return jsonify({"error": "Weight must be greater than 0"}), 400
+    if isinstance(weight, bool) or not isinstance(weight, (int, float)):
+        return jsonify({"error": "Weight must be a number"}), 400
+
+    if weight <= 0 or weight > 500:
+        return jsonify({"error": "Weight must be between 0 and 500 kg"}), 400
 
     factor = PROGRAMS[program]["calorie_factor"]
     calories = int(weight * factor)
@@ -71,4 +76,9 @@ def calculate_calories():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Local development only; containers run gunicorn (see Dockerfile).
+    app.run(
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "5000")),
+        debug=os.environ.get("FLASK_DEBUG") == "1",
+    )

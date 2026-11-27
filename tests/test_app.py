@@ -120,3 +120,49 @@ def test_calories_zero_weight_returns_400(client):
 def test_calories_no_body_returns_400(client):
     r = client.post('/calories', content_type='application/json', data='')
     assert r.status_code == 400
+
+# -- input validation --
+def test_calories_string_weight_returns_400(client):
+    r = client.post('/calories', json={'weight': '70', 'program': 'Fat Loss (FL)'})
+    assert r.status_code == 400
+
+
+def test_calories_bool_weight_returns_400(client):
+    r = client.post('/calories', json={'weight': True, 'program': 'Fat Loss (FL)'})
+    assert r.status_code == 400
+
+
+def test_calories_negative_weight_returns_400(client):
+    r = client.post('/calories', json={'weight': -5, 'program': 'Fat Loss (FL)'})
+    assert r.status_code == 400
+
+
+def test_calories_unrealistic_weight_returns_400(client):
+    r = client.post('/calories', json={'weight': 900, 'program': 'Fat Loss (FL)'})
+    assert r.status_code == 400
+
+
+def test_calories_float_weight(client):
+    r = client.post('/calories', json={'weight': 72.5, 'program': 'Beginner (BG)'})
+    assert r.status_code == 200
+    assert r.get_json()['calories'] == 1885   # int(72.5 * 26)
+
+
+def test_calories_json_list_returns_400(client):
+    r = client.post('/calories', json=[70, 'Fat Loss (FL)'])
+    assert r.status_code == 400
+
+
+def test_calories_invalid_json_returns_400(client):
+    r = client.post('/calories', content_type='application/json', data='{weight: 70')
+    assert r.status_code == 400
+
+
+def test_index_page_renders(client):
+    r = client.get('/')
+    assert r.status_code == 200
+    assert b'<html' in r.data.lower()
+
+
+def test_unknown_route_returns_404(client):
+    assert client.get('/does-not-exist').status_code == 404
