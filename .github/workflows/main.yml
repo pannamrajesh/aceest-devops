@@ -61,7 +61,7 @@ jobs:
         if: always()
         run: docker logs app || true
       - name: Scan image (Trivy)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: aceest-fitness:ci
           severity: CRITICAL,HIGH
