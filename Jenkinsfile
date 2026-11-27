@@ -1,48 +1,94 @@
 pipeline {
     agent any
 
-    stages {
+    options {
+        timeout(time: 20, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timestamps()
+    }
 
+    environment {
+        IMAGE = 'aceest-fitness'
+        TAG = "${env.BUILD_NUMBER}"
+        VENV = '.venv'
+    }
+
+    stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/pannamrajesh/aceest-devops.git'
+                checkout scm
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup') {
             steps {
-                bat 'pip install -r requirements.txt'
-                bat 'pip install flake8'
+                bat 'python -m venv %VENV%'
+                bat '%VENV%\\Scripts\\python -m pip install --upgrade pip'
+                bat '%VENV%\\Scripts\\pip install -r requirements-dev.txt'
             }
         }
 
         stage('Lint') {
             steps {
-                bat 'python -m flake8 app.py --max-line-length=100'
+                bat '%VENV%\\Scripts\\flake8 app.py tests'
             }
         }
 
         stage('Unit Tests') {
             steps {
-                bat 'python -m pytest tests/ -v --tb=short'
+                bat '%VENV%\\Scripts\\pytest --junitxml=reports\\junit.xml --cov=app --cov-report=xml:reports\\coverage.xml --cov-fail-under=90'
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'reports/junit.xml'
+                }
             }
         }
 
         stage('Docker Build') {
             steps {
-                bat 'docker build -t aceest-fitness:latest .'
+                bat 'docker build -t %IMAGE%:%TAG% -t %IMAGE%:latest .'
             }
         }
 
+        stage('Smoke Test') {
+            steps {
+                bat 'docker rm -f aceest-smoke 2>nul || exit 0'
+                bat 'docker run -d --name aceest-smoke -p 5055:5000 %IMAGE%:%TAG%'
+                powershell '''
+                    $ok = $false
+                    foreach ($i in 1..30) {
+                        try {
+                            $r = Invoke-RestMethod http://localhost:5055/health
+                            if ($r.status -eq "healthy") { $ok = $true; break }
+                        } catch {}
+                        Start-Sleep 1
+                    }
+                    if (-not $ok) { throw "app did not become healthy" }
+                    $body = @{ weight = 70; program = "Fat Loss (FL)" } | ConvertTo-Json
+                    $c = Invoke-RestMethod -Method Post -Uri http://localhost:5055/calories -ContentType "application/json" -Body $body
+                    if ($c.calories -ne 1540) { throw "unexpected calories: $($c.calories)" }
+                    Write-Host "smoke test passed"
+                '''
+            }
+            post {
+                always {
+                    bat 'docker logs aceest-smoke 2>nul || exit 0'
+                    bat 'docker rm -f aceest-smoke 2>nul || exit 0'
+                }
+            }
+        }
     }
 
     post {
+        always {
+            archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
+        }
         success {
-            echo 'BUILD SUCCESSFUL - ACEest pipeline complete!'
+            echo "Build ${env.BUILD_NUMBER} passed - image ${env.IMAGE}:${env.TAG}"
         }
         failure {
-            echo 'BUILD FAILED - Check stage logs above'
+            echo 'Build failed, check the stage logs above'
         }
     }
 }
